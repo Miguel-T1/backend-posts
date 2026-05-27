@@ -1,0 +1,288 @@
+openapi: 3.0.3
+
+info:
+  title: API de Catálogo de Postagens
+  version: 1.0.0
+  description: |
+    API para gerenciamento de postagens.
+
+servers:
+   - url: https://backend-posts-obfy.onrender.com
+    description: Servidor Render
+
+tags:
+  - name: Postagens
+    description: Operações relacionadas às postagens
+
+paths:
+
+  /posts:
+
+    get:
+      tags:
+        - Postagens
+      summary: Listar postagens
+      description: Retorna todas as postagens cadastradas
+      responses:
+
+        '200':
+          description: Lista retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+
+        '204':
+          description: Nenhuma postagem encontrada
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Postagens
+      summary: Criar postagem
+      description: Cria uma nova postagem no sistema
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostInput'
+
+      responses:
+
+        '201':
+          description: Postagem criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /posts/{id}:
+
+    get:
+      tags:
+        - Postagens
+      summary: Buscar postagem por ID
+
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+
+      responses:
+
+        '200':
+          description: Postagem encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - Postagens
+      summary: Atualizar postagem
+
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostInput'
+
+      responses:
+
+        '200':
+          description: Postagem atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+        '202':
+          description: Atualização aceita para processamento
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Postagens
+      summary: Remover postagem
+
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+
+      responses:
+
+        '204':
+          description: Postagem removida com sucesso
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+
+  parameters:
+
+    PostId:
+      name: id
+      in: path
+      required: true
+      description: ID da postagem
+      schema:
+        type: integer
+        example: 1
+
+  schemas:
+
+    Post:
+      type: object
+      properties:
+
+        id:
+          type: integer
+          example: 1
+
+        titulo:
+          type: string
+          example: Minha primeira postagem
+
+        conteudo:
+          type: string
+          example: Conteúdo completo da postagem
+
+        autor:
+          type: string
+          example: João Silva
+
+        criadoEm:
+          type: string
+          format: date-time
+          example: "2026-05-20T14:30:00Z"
+
+        atualizadoEm:
+          type: string
+          format: date-time
+          example: "2026-05-20T15:00:00Z"
+
+    PostInput:
+      type: object
+      required:
+        - titulo
+        - conteudo
+        - autor
+
+      properties:
+
+        titulo:
+          type: string
+          minLength: 3
+          maxLength: 150
+          example: Nova postagem
+
+        conteudo:
+          type: string
+          minLength: 10
+          example: Texto completo da postagem
+
+        autor:
+          type: string
+          example: Maria Souza
+
+    Error:
+      type: object
+      properties:
+
+        status:
+          type: integer
+          example: 404
+
+        error:
+          type: string
+          example: Not Found
+
+        message:
+          type: string
+          example: Postagem não encontrada
+
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-05-20T14:30:00Z"
+
+  responses:
+
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Usuário não autenticado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ValidationError:
+      description: Erro de validação dos dados enviados
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Erro interno do servidor
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
